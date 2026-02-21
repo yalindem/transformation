@@ -3,22 +3,46 @@ from visualizer import plot_scene
 
 def run_simulation():
     # 1. Giriş Değerleri
-    drone_pos = [5, 0, 8]
+    drone_pos = [5, 0, 8] # in world coordinates
     drone_ori = [0, 0, 45] # Roll, Pitch, Yaw
-    point_in_B = [3, 0, 0] # Drone'un 3m önü
+    point_drone = [3, 0, 0] # Drone'un 3m önü
+
+    camera1_pos_drone = [0.2, -0.05, 0.1]
+    camera1_ori_drone = [-90, 0, -90]  
+
+    camera2_pos_drone = [0.2, 0.05, 0.1]
+    camera2_ori_drone = [-90, 0, -90]  
 
     # 2. Hesaplama (Logic)
-    T_A_B = create_full_transformation_matrix(*drone_pos, *drone_ori)
-    point_in_A = transform_point(T_A_B, point_in_B)
+    T_world_drone = create_full_transformation_matrix(*drone_pos, *drone_ori)
+    point_world = transform_point(T_world_drone, point_drone)
 
-    print("Point in B: ")
-    print(point_in_B)
+    T_drone_camera1 = create_full_transformation_matrix(*camera1_pos_drone, *camera1_ori_drone)
+    T_drone_camera2 = create_full_transformation_matrix(*camera2_pos_drone, *camera2_ori_drone)
+    
+    T_world_camera1 = T_world_drone @ T_drone_camera1
+    T_world_camera2 = T_world_drone @ T_drone_camera1
 
-    print("Point in A: ")
-    print(point_in_A)
+    frames = [
+        {'matrix': T_world_drone,   'label': 'Drone (B)'},
+        {'matrix': T_world_camera1, 'label': 'Cam 1 (C1)'},
+        {'matrix': T_world_camera2, 'label': 'Cam 2 (C2)'}
+    ]
 
-    # 3. Görselleştirme Komutu (UI)
-    plot_scene(T_A_B, point_in_A, title="T_A^B Simülasyonu")
+    # Çizilecek Noktalar Listesi
+    points = [
+        {'coord': point_world, 'label': 'Target P', 'color': 'black'},
+        {'coord': [2, 3, 0],   'label': 'Obstacle', 'color': 'red'}
+    ]
 
+    # Fonksiyonu çağır (Parametre kalabalığı bitti!)
+    plot_scene(frames=frames, points=points, title="Çoklu Çerçeve Simülasyonu")
+    #print("Point in B: ")
+    #print(point_in_B)
+
+    #print("Point in A: ")
+    #print(point_in_A)
+
+   
 if __name__ == "__main__":
     run_simulation()
